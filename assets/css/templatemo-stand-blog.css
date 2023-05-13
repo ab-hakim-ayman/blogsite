@@ -673,11 +673,11 @@ ul.page-numbers li a:hover {
 /* Sidebar */
 
 .sidebar {
-	margin-left: 20px;
+	margin-left: 30px;
 }
 
 .sidebar .sidebar-item {
-	margin-top: 20px;
+	margin-top: 50px;
 }
 
 .sidebar .search {
