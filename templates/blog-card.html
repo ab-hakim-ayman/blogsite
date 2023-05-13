@@ -6,7 +6,7 @@
       </div>
       <div class="down-content">
         <span>{{blog.category}}</span>
-        <a href="post-details.html"><h4>{{blog.title}}</h4></a>
+        <a href="{% url 'blog_details' blog.slug %}"><h4>{{blog.title}}</h4></a>
         <ul class="post-info">
           <li><a href="#">{{blog.user.username}}</a></li>
           <li><a href="#">{{blog.created_date}}</a></li>
@@ -18,13 +18,24 @@
             <div class="col-lg-12">
               <ul class="post-tags">
                 <li><i class="fa fa-tags"></i></li>
-                
-                {% for tag in blog.tags.all %} 
-                <li><a href="#">{{tag.title}}</a></li>
-                {% endfor %}
-
-              </ul>
+                               
+                {% if blog.tags.all.count > 0 %}
+                  {% for tag in blog.tags.all %} 
+                  <li><a href="#">{{tag.title}}</a></li>
+                  {% endfor %}
+                {% else %}
+                  None
+                {% endif %}
+                  
+              </ul>              
             </div>
+            <div class="col-6">
+              <ul class="post-share">
+                <li><i class="fa fa-share-alt"></i></li>
+                <li><a href="#">Facebook</a>,</li>
+                <li><a href="#"> Twitter</a></li>
+              </ul>
+            </div>            
           </div>
         </div>
       </div>

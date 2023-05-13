@@ -41,6 +41,10 @@ class Blog(models.Model):
     def __str__(self):
         return self.title 
     
+    def save(self, *args, **kwargs):
+        self.slug = slugify(self.title)
+        super().save(*args, **kwargs)
+    
 class Comment(models.Model):
     user = models.ForeignKey(User, related_name='user_comments', on_delete=models.CASCADE)
     blog = models.ForeignKey(Blog, related_name='blog_comments', on_delete=models.CASCADE)
