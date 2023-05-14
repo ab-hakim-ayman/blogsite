@@ -10,9 +10,9 @@
 	padding: 10px 15px;
 	margin-bottom: 30px;
 	height: 180px;
-	max-height: 220px;
+	max-height: 70px;
 	max-width: 100%;
-	min-width: 160px;
+	min-width: 300px !important;
 }
 
 .submit-reply button:hover {
@@ -40,6 +40,7 @@
 .submit-comment textarea {
     text-transform: none !important;
     border: 1px solid #8d5959 !important;
+    max-height: 80px !important;
 }
 
 .submit-comment a:hover {
@@ -58,4 +59,12 @@
     transition: all .3s;
     border: none;
     outline: none;   
+}
+
+.fa-heart {
+    color: red !important;
+}
+
+.empty-heart {
+    color: #cdcdcd !important;
 }

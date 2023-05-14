@@ -1,5 +1,6 @@
 from django.shortcuts import render, redirect, get_object_or_404
 from django.core.paginator import PageNotAnInteger, EmptyPage, Paginator
+from django.http import JsonResponse
 
 from .models import Category, Tag, Blog, Comment, Reply
 from .forms import TextForm
@@ -81,11 +82,13 @@ def blog_details(request, slug):
     comments = blog.blog_comments.all()
     related_blogs = category.category_blogs.all()
     tags = Tag.objects.order_by('created_date')
+    liked_by = request.user in blog.likes.all()
     context = {
         'blog' : blog,
         'comments' : comments,
         'related_blogs' : related_blogs,
         'tags' : tags,
+        'liked_by' : liked_by
     }
     return render(request, 'blog-details.html', context)
 
@@ -114,3 +117,17 @@ def add_reply(request, blog_id, comment_id):
                 text=form.cleaned_data.get('text')
             )
     return redirect('blog_details', slug=blog.slug)
+
+def blog_like(request, pk):
+    blog = get_object_or_404(Blog, pk=pk)
+    context = {}
+    
+    if request.user in blog.likes.all():
+        blog.likes.remove(request.user)
+        context['liked'] = False
+        context['like_count'] = blog.likes.all().count() 
+    else:
+        blog.likes.add(request.user)
+        context['liked'] = True 
+        context['like_count'] = blog.likes.all().count()
+    return JsonResponse(context, safe=False)  

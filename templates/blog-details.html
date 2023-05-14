@@ -56,7 +56,7 @@
                   </div>
                   <div class="down-content">
                     <span>{{blog.category.title}}</span>
-                    <a href="post-details.html"><h4>{{blog.category.title}}</h4></a>
+                    <a href="post-details.html"><h4>{{blog.title}}</h4></a>
                     <ul class="post-info">
                       <li><a href="#">{{blog.user.username}}</a></li>
                       <li><a href="#">{{blog.created_date}}</a></li>
@@ -77,14 +77,41 @@
                             {% endif %}
                           </ul>
                         </div>
+                        
+                        {% if request.user.is_authenticated %}
                         <div class="col-6">
                           <ul class="post-share">
-                            <li><i class="fa fa-heart"></i></li>
+                            <li id="like-count">{{blog.likes.count}}</li>
+                            
+                            {% if liked_by %}
+                            <li class="pl-3 pr-3"><a href="javascript:void(0);"><i id="like-icon" data-blog="{{blog.id}}" class="fa fa-heart"></i></a></li>
+                            {% else %}
+                            <li class="pl-3 pr-3"><a href="javascript:void(0);"><i id="like-icon" data-blog="{{blog.id}}" class="fa fa-heart empty-heart"></i></a></li>
+                            {% endif %}
+                                                         
+                            <li><i class="fa fa-share-alt"></i></li>
+                            <li><a href="#">Facebook</a>,</li>
+                            <li><a href="#"> Twitter</a></li>
+                          </ul>
+                        </div> 
+                        {% else %}
+                        <div class="col-6">
+                          <ul class="post-share">
+                            <li id="like-count">{{blog.likes.all.count}}</li>
+                            
+                            {% if liked_by %}
+                            <li class="pl-3 pr-3"><a href="{% url 'home' %}"><i id="like-icon" data-blog="{{blog.id}}" class="fa fa-heart"></i></a></li>
+                            {% else %}
+                            <li class="pl-3 pr-3"><a href="{% url 'home' %}"><i id="like-icon" data-blog="{{blog.id}}" class="fa fa-heart empty-heart"></i></a></li>
+                            {% endif %}
+                                                         
                             <li><i class="fa fa-share-alt"></i></li>
                             <li><a href="#">Facebook</a>,</li>
                             <li><a href="#"> Twitter</a></li>
                           </ul>
                         </div>
+                        {% endif %}
+                          
                       </div>
                     </div>
                   </div>
@@ -101,7 +128,7 @@
                       {% for comment in comments %}
                         <li>
                           <div class="author-thumb">
-                            <img src="{% static 'images/comment-author-01.jpg' %}" alt="">
+                            <img src="{{comment.user.get_profile_picture}}" alt="">
                           </div>
                           <div class="right-content">
                             <h4>{{comment.user.username}}<span>{{comment.created_date}}</span></h4>
@@ -111,7 +138,7 @@
                               <div class="row"> 
                                 <div class="col-lg-12">
                                   <fieldset>
-                                    <textarea name="text" rows="50" cols="50" id="message" placeholder="Type your reply" required=""></textarea>
+                                    <textarea name="text" id="message" placeholder="Type your reply" required=""></textarea>
                                   </fieldset>
                                 </div>
                                 <div class="col-lg-12">
@@ -134,7 +161,7 @@
                                                   
                           <li class="replied">
                             <div class="author-thumb">
-                              <img src="{% static 'images/comment-author-02.jpg' %}" alt="">
+                              <img src="{{reply.user.get_profile_picture}}" alt="">
                             </div>
                             <div class="right-content">
                               <h4>{{reply.user.username}}<span>{{reply.created_date}}</span></h4>
@@ -161,7 +188,7 @@
                       <div class="row"> 
                         <div class="col-lg-12">
                           <fieldset>
-                            <textarea name="text" rows="3" cols="50" id="message" placeholder="Type your comment" required=""></textarea>
+                            <textarea name="text" id="message" placeholder="Type your comment" required=""></textarea>
                           </fieldset>
                         </div>
                         <div class="col-lg-12">
@@ -196,22 +223,18 @@
               <div class="col-lg-12">
                 <div class="sidebar-item recent-posts">
                   <div class="sidebar-heading">
-                    <h2>Recent Posts</h2>
+                    <h2>Recent Blogs</h2>
                   </div>
                   <div class="content">
                     <ul>
-                      <li><a href="post-details.html">
-                        <h5>Vestibulum id turpis porttitor sapien facilisis scelerisque</h5>
-                        <span>May 31, 2020</span>
+                      
+                      {% for blog in related_blogs %}
+                      <li><a href="{% url 'blog_details' blog.slug %}">
+                        <h5>{{blog.title}}</h5>
+                        <span>{{blog.created_date}}</span>
                       </a></li>
-                      <li><a href="post-details.html">
-                        <h5>Suspendisse et metus nec libero ultrices varius eget in risus</h5>
-                        <span>May 28, 2020</span>
-                      </a></li>
-                      <li><a href="post-details.html">
-                        <h5>Swag hella echo park leggings, shaman cornhole ethical coloring</h5>
-                        <span>May 14, 2020</span>
-                      </a></li>
+                      {% endfor %}
+                        
                     </ul>
                   </div>
                 </div>
@@ -223,12 +246,11 @@
                   </div>
                   <div class="content">
                     <ul>
-                      <li><a href="#">- Nature Lifestyle</a></li>
-                      <li><a href="#">- Awesome Layouts</a></li>
-                      <li><a href="#">- Creative Ideas</a></li>
-                      <li><a href="#">- Responsive Templates</a></li>
-                      <li><a href="#">- HTML5 / CSS3 Templates</a></li>
-                      <li><a href="#">- Creative &amp; Unique</a></li>
+                      
+                      {% for category in categories %}
+                      <li><a href="{% url 'blog_details' blog.slug %}">- {{category.title}}</a></li>
+                      {% endfor %}
+                        
                     </ul>
                   </div>
                 </div>
@@ -240,13 +262,11 @@
                   </div>
                   <div class="content">
                     <ul>
-                      <li><a href="#">Lifestyle</a></li>
-                      <li><a href="#">Creative</a></li>
-                      <li><a href="#">HTML5</a></li>
-                      <li><a href="#">Inspiration</a></li>
-                      <li><a href="#">Motivation</a></li>
-                      <li><a href="#">PSD</a></li>
-                      <li><a href="#">Responsive</a></li>
+                      
+                      {% for tag in tags %}
+                      <li><a href="#">{{tag.title}}</a></li>
+                      {% endfor %}
+                        
                     </ul>
                   </div>
                 </div>
@@ -258,4 +278,10 @@
     </div>
   </section>
 {% endblock content %}
+
+
+{% block js %}
+  <script src="{% static 'js/blog_like.js' %}"></script>
+{% endblock js %}
+  
     
