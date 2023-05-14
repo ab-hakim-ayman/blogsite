@@ -45,7 +45,7 @@ h1,h2,h3,h4,h5,h6 {
 }
 
 .main-button a:hover {
-	background-color: #fb9857;
+	background-color: #9b7256;
 }
 
 .heading-page {
@@ -667,7 +667,7 @@ ul.page-numbers li a:hover {
 }
 
 .blog-posts .submit-comment button:hover {
-	background-color: #fb9857;
+	background-color: #573721
 }
 
 /* Sidebar */
