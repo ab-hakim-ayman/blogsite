@@ -31,13 +31,37 @@
                       
                   </div>
                 </li>
-                <li class="nav-item">
-                  <a class="nav-link" href="post-details.html">Post Details</a>
+                
+                {% if request.user.is_authenticated %}
+                <li class="nav-item dropdown">
+                  <a class="nav-link dropdown-toggle" href="#" id="navbarDropdown" role="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                    {{request.user.username}}
+                  </a>
+                  <div class="dropdown-menu" aria-labelledby="navbarDropdown">
+                      <a class="dropdown-item" href="#">My Profile</a>                     
+                      <a class="dropdown-item" href="#">
+                        
+                        {% if unseen > 0 %}
+                          Notification ({{unseen}})
+                        {% else %}
+                          Notification
+                        {% endif %}
+                          
+                      </a>  
+                      <a class="dropdown-item" href="{% url 'user_logout' %}">Logout</a>                    
+                  </div>
                 </li>
+                {% else %}
                 <li class="nav-item">
-                  <a class="nav-link" href="contact.html">Contact Us</a>
+                  <a class="nav-link" href="{% url 'user_login' %}">Login</a>
                 </li>
+                {% endif %}
               </ul>
+                  
+              <form class="form-inline my-2 my-lg-0" method="GET" action="{% url 'blog_search' %}">
+                <input class="form-control mr-sm-2" name="search" type="search" placeholder="Search" aria-label="Search">
+                <button class="btn btn-outline-success my-2 my-sm-0" type="submit">Search</button>
+              </form>
             </div>
           </div>
         </nav>
