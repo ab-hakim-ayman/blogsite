@@ -98,3 +98,13 @@
 input, textarea {
     text-transform: none !important;
 }
+
+.user-profile {
+    padding-top: 110px !important;
+}
+
+.user-picture {
+    max-width: 100%;
+    width: 170px;
+    height: 170px;
+}

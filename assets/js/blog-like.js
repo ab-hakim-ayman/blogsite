@@ -3,7 +3,7 @@ const likeCount = document.getElementById('like-count');
 
 likeIcon.onclick = () =>{
     const blogId = likeIcon.getAttribute('data-blog');
-    const url = `/like/${parseInt(blogId)}/`;
+    const url = `/blog-like/${parseInt(blogId)}/`;
     fetch(url, {
         method: 'GET',
         headers:{

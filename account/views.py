@@ -5,9 +5,12 @@ from django.contrib import messages
 
 from .forms import (
     LoginForm,
-    UserRegistrationForm
+    UserRegistrationForm,
+    UserProfileForm,
+    UserPictureForm
 )
 from .decorators import not_login_required
+from .models import User
 
 @never_cache
 @not_login_required
@@ -51,3 +54,46 @@ def user_login(request):
 def user_logout(request):
     logout(request)
     return redirect('user_login')
+
+def user_profile(request):
+    account = get_object_or_404(User, pk=request.user.pk)
+    form = UserProfileForm(instance=account)
+
+    if request.method == "POST":
+        if request.user.pk != account.pk:
+            return redirect('home')
+
+        form = UserProfileForm(request.POST, instance=account)
+        if form.is_valid():
+            form.save()
+            messages.success(request, "Profile has been updated sucessfully!")
+            return redirect('profile')
+        else:
+            print(form.errors)
+
+    context = {
+        "account": account,
+        "form": form
+    }
+    return render(request, 'user-profile.html', context)
+
+def user_picture(request):
+    if request.method == "POST":
+
+        form = UserPictureForm(request.POST, request.FILES)
+
+        if form.is_valid():
+            image = request.FILES['profile_image']
+            user = get_object_or_404(User, pk=request.user.pk)
+
+            if request.user.pk != user.pk:
+                return redirect('home')
+
+            user.profile_image = image
+            user.save()
+            messages.success(request, "Profile picture updated successfully!")
+
+        else:
+            print(form.errors)
+
+    return redirect('user_profile')
