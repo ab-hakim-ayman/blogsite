@@ -12,4 +12,6 @@ urlpatterns = [
     path('blog-reply/<int:blog_id>/<int:comment_id>/', views.blog_reply, name='blog_reply'),
     path('blog-like/<int:pk>/', views.blog_like, name='blog_like'),
     path('blog-search/', views.blog_search, name='blog_search'),
+    path('blog-add/', views.blog_add, name='blog_add'),
+    path('blog-update/<str:slug>/', views.blog_update, name='blog_update'),
 ]

@@ -99,7 +99,7 @@ input, textarea {
     text-transform: none !important;
 }
 
-.user-profile {
+.user-profile, .blog-add {
     padding-top: 110px !important;
 }
 

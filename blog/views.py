@@ -3,9 +3,12 @@ from django.core.paginator import PageNotAnInteger, EmptyPage, Paginator
 from django.http import JsonResponse
 from django.contrib import messages
 from django.db.models import Q
+from django.utils.text import slugify
 
 from .models import Category, Tag, Blog, Comment, Reply
-from .forms import TextForm
+from .forms import TextForm, BlogForm
+
+from account.models import User
 
 
 def home(request):
@@ -155,30 +158,93 @@ def blog_search(request):
     else:
         return redirect('home')  
     
-def user_blogs(request):
-    queryset = request.user.user_blogs.all()
-    page = request.GET.get('page', 1)
-    paginator = Paginator(queryset, 6)
-    delete = request.GET.get('delete', None)
 
-    if delete:
-        blog = get_object_or_404(Blog, pk=delete) 
-        if request.user.pk != blog.user.pk:
-            return redirect('home')
-        blog.delete()
-        messages.success(request, "Your blog has been deleted!")
-        return redirect('my_blogs')
+def blog_add(request):
+    form = BlogForm()
 
-    try:
-        blogs = paginator.page(page)
-    except EmptyPage:
-        blogs = paginator.page(1)
-    except PageNotAnInteger:
-        blogs = paginator.page(1)
-        return redirect('blogs')
+    if request.method == "POST":
+        form = BlogForm(request.POST, request.FILES)
+        if form.is_valid():
+            tags = request.POST['tags'].split(',')
+            user = get_object_or_404(User, pk=request.user.pk)
+            category = get_object_or_404(Category, pk=request.POST['category'])
+            blog = form.save(commit=False)
+            blog.user = user
+            blog.category = category
+            blog.save()
+
+            for tag in tags:
+                tag_input = Tag.objects.filter(
+                    title__iexact=tag.strip(),
+                    slug=slugify(tag.strip())
+                )
+                if tag_input.exists():
+                    t = tag_input.first()
+                    blog.tags.add(t)
+
+                else:
+                    if tag != '':
+                        new_tag = Tag.objects.create(
+                            title=tag.strip(),
+                            slug=slugify(tag.strip())
+                        )
+                        blog.tags.add(new_tag)
+
+            messages.success(request, "Blog added successfully!")
+            return redirect('blog_details', slug=blog.slug)
+        else:
+            print(form.errors)
 
     context = {
-        "blogs": blogs,
-        "paginator": paginator
-    }   
-    return render(request, 'user_blogs.html', context) 
+        "form": form
+    }
+    return render(request, 'blog-add.html', context)
+
+def blog_update(request, slug):
+    blog = get_object_or_404(Blog, slug=slug)
+    form = BlogForm(instance=blog)
+
+    if request.method == "POST":
+        form = BlogForm(request.POST, request.FILES, instance=blog)
+        
+        if form.is_valid():
+            
+            if request.user.pk != blog.user.pk:
+                return redirect('home')
+
+            tags = request.POST['tags'].split(',')
+            user = get_object_or_404(User, pk=request.user.pk)
+            category = get_object_or_404(Category, pk=request.POST['category'])
+            blog = form.save(commit=False)
+            blog.user = user
+            blog.category = category
+            blog.save()
+
+            for tag in tags:
+                tag_input = Tag.objects.filter(
+                    title__iexact=tag.strip(),
+                    slug=slugify(tag.strip())
+                )
+                if tag_input.exists():
+                    t = tag_input.first()
+                    blog.tags.add(t)
+
+                else:
+                    if tag != '':
+                        new_tag = Tag.objects.create(
+                            title=tag.strip(),
+                            slug=slugify(tag.strip())
+                        )
+                        blog.tags.add(new_tag)
+
+            messages.success(request, "Blog updated successfully!")
+            return redirect('blog_details', slug=blog.slug)
+        else:
+            print(form.errors)
+
+
+    context = {
+        "form": form,
+        "blog": blog
+    }
+    return render(request, 'blog-update.html', context)
