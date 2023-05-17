@@ -2,6 +2,7 @@ from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib.auth import login, logout, authenticate
 from django.views.decorators.cache import never_cache
 from django.contrib import messages
+from django.core.paginator import PageNotAnInteger, EmptyPage, Paginator
 
 from .forms import (
     LoginForm,
@@ -11,6 +12,7 @@ from .forms import (
 )
 from .decorators import not_login_required
 from .models import User
+from blog.views import Blog
 
 @never_cache
 @not_login_required
@@ -62,7 +64,6 @@ def user_profile(request):
     if request.method == "POST":
         if request.user.pk != account.pk:
             return redirect('home')
-
         form = UserProfileForm(request.POST, instance=account)
         if form.is_valid():
             form.save()
@@ -79,21 +80,44 @@ def user_profile(request):
 
 def user_picture(request):
     if request.method == "POST":
-
         form = UserPictureForm(request.POST, request.FILES)
-
         if form.is_valid():
             image = request.FILES['profile_image']
             user = get_object_or_404(User, pk=request.user.pk)
-
             if request.user.pk != user.pk:
                 return redirect('home')
 
-            user.profile_image = image
+            user.image = image
             user.save()
             messages.success(request, "Profile picture updated successfully!")
-
         else:
             print(form.errors)
-
     return redirect('user_profile')
+
+def user_blogs(request):
+    queryset = request.user.user_blogs.all()
+    page = request.GET.get('page', 1)
+    paginator = Paginator(queryset, 6)
+    delete = request.GET.get('delete', None)
+
+    if delete:
+        blog = get_object_or_404(Blog, pk=delete) 
+        if request.user.pk != blog.user.pk:
+            return redirect('home')
+        blog.delete()
+        messages.success(request, "Your blog has been deleted!")
+        return redirect('my_blogs')
+
+    try:
+        blogs = paginator.page(page)
+    except EmptyPage:
+        blogs = paginator.page(1)
+    except PageNotAnInteger:
+        blogs = paginator.page(1)
+        return redirect('blogs')
+
+    context = {
+        "blogs": blogs,
+        "paginator": paginator
+    }   
+    return render(request, 'user-blogs.html', context) 

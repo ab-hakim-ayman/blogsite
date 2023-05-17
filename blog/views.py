@@ -1,6 +1,7 @@
 from django.shortcuts import render, redirect, get_object_or_404
 from django.core.paginator import PageNotAnInteger, EmptyPage, Paginator
 from django.http import JsonResponse
+from django.contrib import messages
 from django.db.models import Q
 
 from .models import Category, Tag, Blog, Comment, Reply
@@ -152,4 +153,32 @@ def blog_search(request):
         }
         return render(request, 'search.html', context)
     else:
-        return redirect('home')   
+        return redirect('home')  
+    
+def user_blogs(request):
+    queryset = request.user.user_blogs.all()
+    page = request.GET.get('page', 1)
+    paginator = Paginator(queryset, 6)
+    delete = request.GET.get('delete', None)
+
+    if delete:
+        blog = get_object_or_404(Blog, pk=delete) 
+        if request.user.pk != blog.user.pk:
+            return redirect('home')
+        blog.delete()
+        messages.success(request, "Your blog has been deleted!")
+        return redirect('my_blogs')
+
+    try:
+        blogs = paginator.page(page)
+    except EmptyPage:
+        blogs = paginator.page(1)
+    except PageNotAnInteger:
+        blogs = paginator.page(1)
+        return redirect('blogs')
+
+    context = {
+        "blogs": blogs,
+        "paginator": paginator
+    }   
+    return render(request, 'user_blogs.html', context) 
