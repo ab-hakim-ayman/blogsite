@@ -11,7 +11,7 @@ from .forms import (
     UserPictureForm
 )
 from .decorators import not_login_required
-from .models import User
+from .models import User, Follow
 from blog.views import Blog
 
 @never_cache
@@ -121,3 +121,66 @@ def user_blogs(request):
         "paginator": paginator
     }   
     return render(request, 'user-blogs.html', context) 
+
+def user_info(request, username):
+    account = get_object_or_404(User, username=username)
+    following = False
+    muted = None
+
+    if request.user.is_authenticated:
+        if request.user.id == account.id:
+            return redirect("user_profile")
+
+        followers = account.followers.filter(
+            followed_by__id=request.user.id
+        )
+        if followers.exists():
+            following = True
+
+    if following:
+        queryset = followers.first()
+        if queryset.muted:
+            muted = True
+        else:
+            muted = False
+
+    context = {
+        "account": account,
+        "following": following,
+        "muted": muted
+    }
+    return render(request, 'user-info.html', context)
+
+
+def user_follow_or_unfollow(request, id):
+    followed = get_object_or_404(User, id=id)
+    followed_by = get_object_or_404(User, id=request.user.id)
+
+    follow, created = Follow.objects.get_or_create(
+        followed=followed,
+        followed_by=followed_by
+    )
+
+    if created:
+        followed.followers.add(follow)
+    else:
+        followed.followers.remove(follow)
+        follow.delete()
+    return redirect('user_info', username=followed.username)
+
+def user_mute_or_unmute(request, id):
+    user = get_object_or_404(User, pk=id)
+    follower = get_object_or_404(User, pk=request.user.pk)
+    instance = get_object_or_404(
+        Follow,
+        followed=user,
+        followed_by=follower
+    )
+
+    if instance.muted:
+        instance.muted = False
+        instance.save()
+    else:
+        instance.muted = True
+        instance.save()
+    return redirect('user_info', username=user.username)
